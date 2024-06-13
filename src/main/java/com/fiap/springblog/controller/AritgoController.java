@@ -10,19 +10,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/artigos")
 public class AritgoController {
+    @Autowired
+    private ArtigoService artigoService;
 
     @GetMapping
     public List<Artigo> obterTodos() {
-        return null;
+        return artigoService.obterTodos();
     }
 
     @GetMapping("/{codigo}")
     public Artigo obterPorCodigo(@PathVariable String codigo) {
-        return null;
+        return artigoService.obterPorCodigo(codigo);
     }
 
     @PostMapping
     public Artigo criar(@RequestBody Artigo artigo) {
-        return null;
+        return artigoService.criar(artigo);
     }
 }
