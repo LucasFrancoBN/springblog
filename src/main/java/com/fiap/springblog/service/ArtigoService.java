@@ -2,6 +2,7 @@ package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface ArtigoService {
 
     List<Artigo> findByDataGreaterThan(LocalDateTime data);
 
-    List<Artigo> findByDataAndStatus(LocalDateTime data, Integer status);
+    List<Artigo> findByDataAndStatus(Instant data, Integer status);
 
     void atualizar(Artigo updateArtigo);
 }

@@ -5,6 +5,7 @@ import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class AritgoController {
 
     @GetMapping("/data-status")
     public List<Artigo> findByDataAndStatus(
-            @RequestParam("data") LocalDateTime data,
+            @RequestParam("data") Instant data,
             @RequestParam("status") Integer status
     ) {
         return artigoService.findByDataAndStatus(data, status);

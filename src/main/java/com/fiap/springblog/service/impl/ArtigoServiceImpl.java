@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -67,8 +68,10 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
-    public List<Artigo> findByDataAndStatus(LocalDateTime data, Integer status) {
-        return artigoRepository.findArtigoByDataAndStatus(data, status);
+    public List<Artigo> findByDataAndStatus(Instant data, Integer status) {
+        Query query = new Query(Criteria.where("data")
+                .is(data).and("status").is(status));
+        return mongoTemplate.find(query, Artigo.class);
     }
 
     @Override
