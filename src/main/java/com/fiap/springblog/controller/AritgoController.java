@@ -43,8 +43,23 @@ public class AritgoController {
         artigoService.atualizar(updateArtigo);
     }
 
+    @PutMapping(value = "/{id}")
+    public void atualizarArtigo(@PathVariable String id, @RequestBody String novaUrl) {
+        artigoService.atualizarArtigo(id, novaUrl);
+    }
+
     @PostMapping
     public Artigo criar(@RequestBody Artigo artigo) {
         return artigoService.criar(artigo);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteArtigo(@PathVariable String id) {
+        artigoService.deleteById(id);
+    }
+
+    @DeleteMapping("/delete")
+    public void deleteArtigoById(@RequestParam("Id") String id) {
+        artigoService.deleteArtigoById(id);
     }
 }

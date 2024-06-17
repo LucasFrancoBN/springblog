@@ -18,4 +18,10 @@ public interface ArtigoService {
     List<Artigo> findByDataAndStatus(Instant data, Integer status);
 
     void atualizar(Artigo updateArtigo);
+
+    void atualizarArtigo(String id, String novaURL);
+
+    void deleteById(String id);
+
+    void deleteArtigoById(String id);
 }

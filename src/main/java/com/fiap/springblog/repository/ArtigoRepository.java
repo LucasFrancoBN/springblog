@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ArtigoRepository extends MongoRepository<Artigo, String> {
     List<Artigo> findArtigoByDataAndStatus(LocalDateTime data, Integer status);
+
+    void deleteById(String id);
 }
