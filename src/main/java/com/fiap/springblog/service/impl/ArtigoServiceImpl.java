@@ -6,6 +6,8 @@ import com.fiap.springblog.repository.ArtigoRepository;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -100,4 +102,42 @@ public class ArtigoServiceImpl implements ArtigoService {
         Query query = new Query(Criteria.where("_id").is(id));
         mongoTemplate.remove(query, Artigo.class);
     }
+
+    @Override
+    public List<Artigo> findArtigoByStatusAndDataGreaterThan(Integer status, Instant data) {
+        return artigoRepository.findArtigoByStatusAndDataGreaterThan(status, data);
+    }
+
+    @Override
+    public List<Artigo> obterArtigoPorDataHora(Instant de, Instant ate) {
+        return artigoRepository.obterArtigoPorDataHora(de, ate);
+    }
+
+    @Override
+    public List<Artigo> encontrarArtigoComplexos(Integer status, Instant data, String titulo) {
+        Criteria criteria = new Criteria();
+
+        // Filtrar artigos com data menor ou igual ao valor fornecido
+        criteria.and("data").lte(data);
+
+        // Filtrar artigos com o status especificado
+        if(status != null) {
+            criteria.and("status").is(status);
+        }
+
+        // Filtrar artigos cujo titulo exista
+        if(titulo != null && !titulo.isEmpty()) {
+            criteria.and("titulo").regex(titulo, "i");
+        }
+
+        Query query = new Query(criteria);
+        return mongoTemplate.find(query, Artigo.class);
+    }
+
+    @Override
+    public Page<Artigo> listaArtigos(Pageable pageable) {
+        return artigoRepository.findAll(pageable);
+    }
+
+
 }

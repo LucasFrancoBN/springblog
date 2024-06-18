@@ -3,6 +3,9 @@ package com.fiap.springblog.controller;
 import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -61,5 +64,33 @@ public class AritgoController {
     @DeleteMapping("/delete")
     public void deleteArtigoById(@RequestParam("Id") String id) {
         artigoService.deleteArtigoById(id);
+    }
+
+    @GetMapping("/status-maiordata")
+    public List<Artigo> findByStatusAndDataGreaterThan(
+            @RequestParam("status") Integer status,
+            @RequestParam("data") Instant data) {
+        return artigoService.findArtigoByStatusAndDataGreaterThan(status, data);
+    }
+
+    @GetMapping("/periodo")
+    public List<Artigo> obterArtigoPorDataHora(
+            @RequestParam("de") Instant de,
+            @RequestParam("ate") Instant ate) {
+        return artigoService.obterArtigoPorDataHora(de, ate);
+    }
+
+    @GetMapping("/artigo-complexo")
+    public List<Artigo> encontrarArtigosComplexos(
+            @RequestParam("status") Integer status,
+            @RequestParam("data") Instant date,
+            @RequestParam("titulo") String titulo
+    ) {
+        return artigoService.encontrarArtigoComplexos(status, date, titulo);
+    }
+
+    @GetMapping("/pagina-artigo")
+    public ResponseEntity<Page<Artigo>> obterArtigosPaginados(Pageable pageable) {
+        return ResponseEntity.ok(artigoService.listaArtigos(pageable));
     }
 }

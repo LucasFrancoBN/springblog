@@ -1,6 +1,8 @@
 package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,4 +26,12 @@ public interface ArtigoService {
     void deleteById(String id);
 
     void deleteArtigoById(String id);
+
+    List<Artigo> findArtigoByStatusAndDataGreaterThan(Integer status, Instant data);
+
+    List<Artigo> obterArtigoPorDataHora(Instant de, Instant ate);
+
+    List<Artigo> encontrarArtigoComplexos(Integer status, Instant data, String titulo);
+
+    Page<Artigo> listaArtigos(Pageable pageable);
 }
