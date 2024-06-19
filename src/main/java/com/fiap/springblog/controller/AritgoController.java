@@ -1,6 +1,7 @@
 package com.fiap.springblog.controller;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -92,5 +93,25 @@ public class AritgoController {
     @GetMapping("/pagina-artigo")
     public ResponseEntity<Page<Artigo>> obterArtigosPaginados(Pageable pageable) {
         return ResponseEntity.ok(artigoService.listaArtigos(pageable));
+    }
+
+    @GetMapping("/status-ordenado")
+    public List<Artigo> findArtigoByStatusOrderByTituloAsc(@RequestParam("status") Integer status) {
+        return artigoService.findArtigoByStatusOrderByTituloAsc(status);
+    }
+
+    @GetMapping("/status-query-ordenacao")
+    public List<Artigo> obterArtigoPorStatusComOrdernacao(@RequestParam("status") Integer status) {
+        return artigoService.obterArtigoPorStatusOrdernacao(status);
+    }
+
+    @GetMapping("/status-contagem")
+    public List<ArtigoStatusCount> contarArtigosPorStatus() {
+        return artigoService.contarArtigosPorStatus();
+    }
+
+    @GetMapping("/buscatexto")
+    public List<Artigo> findByText(@RequestParam("searchTerm")  String searchTerm) {
+        return artigoService.findByText(searchTerm);
     }
 }

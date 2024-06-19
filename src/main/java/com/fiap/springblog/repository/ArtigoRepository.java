@@ -1,6 +1,7 @@
 package com.fiap.springblog.repository;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -21,4 +22,9 @@ public interface ArtigoRepository extends MongoRepository<Artigo, String> {
     List<Artigo> obterArtigoPorDataHora(Instant de, Instant ate);
 
     Page<Artigo> findAll(Pageable pageable);
+
+    List<Artigo> findArtigoByStatusOrderByTituloAsc(Integer status);
+
+    @Query(value = "{ status:  {$eq:  ?0}}", sort = "{titulo:  1}")
+    List<Artigo> obterArtigoPorStatusOrdernacao(Integer status);
 }

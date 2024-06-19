@@ -1,6 +1,8 @@
 package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
+import com.fiap.springblog.model.AutorTotalArtigo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -34,4 +36,14 @@ public interface ArtigoService {
     List<Artigo> encontrarArtigoComplexos(Integer status, Instant data, String titulo);
 
     Page<Artigo> listaArtigos(Pageable pageable);
+
+    List<Artigo> findArtigoByStatusOrderByTituloAsc(Integer status);
+
+    List<Artigo> obterArtigoPorStatusOrdernacao(Integer status);
+
+    List<Artigo> findByText(String searchTerm);
+
+    List<ArtigoStatusCount> contarArtigosPorStatus();
+
+    List<AutorTotalArtigo> calcularTotalArtigosPorAutorPeriodo(Instant dataInicio, Instant dataFim);
 }

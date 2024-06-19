@@ -1,7 +1,9 @@
 package com.fiap.springblog.service.impl;
 
 import com.fiap.springblog.model.Artigo;
+import com.fiap.springblog.model.ArtigoStatusCount;
 import com.fiap.springblog.model.Autor;
+import com.fiap.springblog.model.AutorTotalArtigo;
 import com.fiap.springblog.repository.ArtigoRepository;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
@@ -9,9 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -137,6 +140,50 @@ public class ArtigoServiceImpl implements ArtigoService {
     @Override
     public Page<Artigo> listaArtigos(Pageable pageable) {
         return artigoRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<Artigo> findArtigoByStatusOrderByTituloAsc(Integer status) {
+        return artigoRepository.findArtigoByStatusOrderByTituloAsc(status);
+    }
+
+    @Override
+    public List<Artigo> obterArtigoPorStatusOrdernacao(Integer status) {
+        return artigoRepository.obterArtigoPorStatusOrdernacao(status);
+    }
+
+    @Override
+    public List<Artigo> findByText(String searchTerm) {
+        TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingPhrase(searchTerm);
+        Query query = TextQuery.queryText(criteria).sortByScore();
+        return mongoTemplate.find(query, Artigo.class);
+    }
+
+    @Override
+    public List<ArtigoStatusCount> contarArtigosPorStatus() {
+        TypedAggregation<Artigo> aggregation = Aggregation.newAggregation(
+          Artigo.class,
+          Aggregation.group("status").count().as("count"),
+          Aggregation.project("count").and("status").previousOperation()
+        );
+
+        AggregationResults<ArtigoStatusCount> results = mongoTemplate.aggregate(aggregation, ArtigoStatusCount.class);
+        return results.getMappedResults();
+    }
+
+    @Override
+    public List<AutorTotalArtigo> calcularTotalArtigosPorAutorPeriodo(Instant dataInicio, Instant dataFim) {
+        TypedAggregation<Artigo> aggregation = Aggregation.newAggregation(
+                Artigo.class,
+                Aggregation.match(
+                        Criteria.where("data").gte(dataInicio).lte(dataFim)
+                ),
+                Aggregation.group("autor").count().as("totalArtigos"),
+                Aggregation.project("totalArtigos").and("autor").previousOperation()
+        );
+
+        AggregationResults<AutorTotalArtigo> result = mongoTemplate.aggregate(aggregation, AutorTotalArtigo.class);
+        return result.getMappedResults();
     }
 
 
