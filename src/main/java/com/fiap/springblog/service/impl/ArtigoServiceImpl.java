@@ -8,6 +8,7 @@ import com.fiap.springblog.repository.ArtigoRepository;
 import com.fiap.springblog.repository.AutorRepository;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,6 +17,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -36,11 +38,13 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> obterTodos() {
         return artigoRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Artigo obterPorCodigo(String codigo) {
         return artigoRepository
                 .findById(codigo)
@@ -48,6 +52,7 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional
     public Artigo criar(Artigo artigo) {
         // Se o autor existe
         if(artigo.getAutor().getCodigo() != null) {
@@ -63,17 +68,42 @@ public class ArtigoServiceImpl implements ArtigoService {
             artigo.setAutor(null);
         }
 
-        // Salva o artigo já com o autor cadastrado
-        return artigoRepository.save(artigo);
+        try {
+            // Salva o artigo já com o autor cadastrado
+            return artigoRepository.save(artigo);
+
+        } catch (OptimisticLockingFailureException exception) {
+            // desenvolver estratégia
+
+            // 1. Recuperar o documento mais recente do banco de dados (na coleção Artigo)
+            Artigo artigoMaisRecente = artigoRepository.findById(artigo.getCodigo()).orElse(null);
+
+            if(artigoMaisRecente != null) {
+                // 2. Atualizar os campos desejados
+                artigoMaisRecente.setTitulo(artigo.getTitulo());
+                artigoMaisRecente.setTexto(artigo.getTexto());
+                artigoMaisRecente.setStatus(artigo.getStatus());
+
+                // 3. Incrementar versão manualmente do documento
+                artigoMaisRecente.setVersion(artigoMaisRecente.getVersion() + 1);
+
+                // Tentar salvar novamente
+                return artigoRepository.save(artigoMaisRecente);
+            } else {
+                throw new RuntimeException("Artigo não encontrado: " + artigo.getCodigo());
+            }
+        }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> findByDataGreaterThan(LocalDateTime data) {
         Query query = new Query(Criteria.where("data").gt(data));
         return mongoTemplate.find(query, Artigo.class);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> findByDataAndStatus(Instant data, Integer status) {
         Query query = new Query(Criteria.where("data")
                 .is(data).and("status").is(status));
@@ -81,11 +111,13 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional
     public void atualizar(Artigo updateArtigo) {
         artigoRepository.save(updateArtigo);
     }
 
     @Override
+    @Transactional
     public void atualizarArtigo(String id, String novaURL) {
         // Critério de busca pelo "_id"
         Query query = new Query(Criteria.where("_id").is(id));
@@ -96,27 +128,32 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional
     public void deleteById(String id) {
         artigoRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public void deleteArtigoById(String id) {
         Query query = new Query(Criteria.where("_id").is(id));
         mongoTemplate.remove(query, Artigo.class);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> findArtigoByStatusAndDataGreaterThan(Integer status, Instant data) {
         return artigoRepository.findArtigoByStatusAndDataGreaterThan(status, data);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> obterArtigoPorDataHora(Instant de, Instant ate) {
         return artigoRepository.obterArtigoPorDataHora(de, ate);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> encontrarArtigoComplexos(Integer status, Instant data, String titulo) {
         Criteria criteria = new Criteria();
 
@@ -138,21 +175,25 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Artigo> listaArtigos(Pageable pageable) {
         return artigoRepository.findAll(pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> findArtigoByStatusOrderByTituloAsc(Integer status) {
         return artigoRepository.findArtigoByStatusOrderByTituloAsc(status);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> obterArtigoPorStatusOrdernacao(Integer status) {
         return artigoRepository.obterArtigoPorStatusOrdernacao(status);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Artigo> findByText(String searchTerm) {
         TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingPhrase(searchTerm);
         Query query = TextQuery.queryText(criteria).sortByScore();
@@ -160,6 +201,7 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ArtigoStatusCount> contarArtigosPorStatus() {
         TypedAggregation<Artigo> aggregation = Aggregation.newAggregation(
           Artigo.class,
@@ -172,6 +214,7 @@ public class ArtigoServiceImpl implements ArtigoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AutorTotalArtigo> calcularTotalArtigosPorAutorPeriodo(Instant dataInicio, Instant dataFim) {
         TypedAggregation<Artigo> aggregation = Aggregation.newAggregation(
                 Artigo.class,
@@ -185,6 +228,4 @@ public class ArtigoServiceImpl implements ArtigoService {
         AggregationResults<AutorTotalArtigo> result = mongoTemplate.aggregate(aggregation, AutorTotalArtigo.class);
         return result.getMappedResults();
     }
-
-
 }

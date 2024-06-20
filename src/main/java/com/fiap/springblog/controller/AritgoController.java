@@ -2,10 +2,13 @@ package com.fiap.springblog.controller;
 
 import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.model.ArtigoStatusCount;
+import com.fiap.springblog.model.AutorTotalArtigo;
 import com.fiap.springblog.service.ArtigoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,13 @@ import java.util.List;
 public class AritgoController {
     @Autowired
     private ArtigoService artigoService;
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptimistcLockingFailureException(
+            OptimisticLockingFailureException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Erro de concorrência: O artigo foi atualizado por outro usuário. Por Favor, tente novamente");
+    }
 
     @GetMapping
     public List<Artigo> obterTodos() {
@@ -113,5 +123,12 @@ public class AritgoController {
     @GetMapping("/buscatexto")
     public List<Artigo> findByText(@RequestParam("searchTerm")  String searchTerm) {
         return artigoService.findByText(searchTerm);
+    }
+
+    @GetMapping("/total-artigo-autor-periodo")
+    public List<AutorTotalArtigo> calcularTotalArtigosPorAutorPeriodo(
+            @RequestParam("dataInicio") Instant dataInicio,
+            @RequestParam("dataFim") Instant dataFim) {
+        return artigoService.calcularTotalArtigosPorAutorPeriodo(dataInicio, dataFim);
     }
 }
