@@ -1,9 +1,8 @@
 package com.fiap.springblog.controller;
 
-import com.fiap.springblog.model.Artigo;
-import com.fiap.springblog.model.ArtigoStatusCount;
-import com.fiap.springblog.model.AutorTotalArtigo;
+import com.fiap.springblog.model.*;
 import com.fiap.springblog.service.ArtigoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
@@ -62,9 +61,19 @@ public class AritgoController {
         artigoService.atualizarArtigo(id, novaUrl);
     }
 
+//    @PostMapping
+//    public Artigo criar(@RequestBody Artigo artigo) {
+//        return artigoService.criar(artigo);
+//    }
+
     @PostMapping
-    public Artigo criar(@RequestBody Artigo artigo) {
+    public ResponseEntity<?> criar(@RequestBody Artigo artigo) {
         return artigoService.criar(artigo);
+    }
+
+    @PutMapping("/atualizar-artigo-corpo/{id}")
+    public ResponseEntity<?> atualizarArtigo(@PathVariable String id, @Valid @RequestBody Artigo artigo) {
+        return artigoService.atualizarArtigo(id, artigo);
     }
 
     @DeleteMapping("/{id}")
@@ -130,5 +139,18 @@ public class AritgoController {
             @RequestParam("dataInicio") Instant dataInicio,
             @RequestParam("dataFim") Instant dataFim) {
         return artigoService.calcularTotalArtigosPorAutorPeriodo(dataInicio, dataFim);
+    }
+
+
+    @PostMapping("/artigo-com-autor")
+    public ResponseEntity<?> criarArtigoComAutor(@RequestBody ArtigoComAutorRequest request) {
+        Artigo artigo = request.getArtigo();
+        Autor autor = request.getAutor();
+        return artigoService.criarArtigoComAutor(artigo, autor);
+    }
+
+    @DeleteMapping("/delete-artigo-autor")
+    public void excluirArtigoEAutor(@RequestBody Artigo artigo) {
+        artigoService.excluirArtigoEAutor(artigo);
     }
 }

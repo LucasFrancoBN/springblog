@@ -2,9 +2,11 @@ package com.fiap.springblog.service;
 
 import com.fiap.springblog.model.Artigo;
 import com.fiap.springblog.model.ArtigoStatusCount;
+import com.fiap.springblog.model.Autor;
 import com.fiap.springblog.model.AutorTotalArtigo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -15,7 +17,7 @@ public interface ArtigoService {
 
     Artigo obterPorCodigo(String codigo);
 
-    Artigo criar(Artigo artigo);
+    // Artigo criar(Artigo artigo);
 
     List<Artigo> findByDataGreaterThan(LocalDateTime data);
 
@@ -46,4 +48,12 @@ public interface ArtigoService {
     List<ArtigoStatusCount> contarArtigosPorStatus();
 
     List<AutorTotalArtigo> calcularTotalArtigosPorAutorPeriodo(Instant dataInicio, Instant dataFim);
+
+    ResponseEntity<?> criar(Artigo artigo);
+
+    ResponseEntity<?> atualizarArtigo(String id, Artigo artigo);
+
+    ResponseEntity<?> criarArtigoComAutor(Artigo artigo, Autor autor);
+
+    void excluirArtigoEAutor(Artigo artigo);
 }
